@@ -1,0 +1,38 @@
+Bon, 
+On galère a faire l'association entre nom de catégories, nom de dossiers et code comptable.
+Reprenons, ce que l'on veut vraiment :
+
+Il faut que lors du traitement du csv des extraits de compte une catégorie soit associé à chaque opération.
+Concernant les dépenses, idéalement il faudrait qu'une association avec le fichier de facture soit créé.
+Afin de directement avoir le chemin et donc le lien du fichier.
+ 
+	Donc le code comptable n'est pas essentiel directement.
+	Mais il serait intéressant de créé une colonne dans le fichier Excel final afin de générer le bilan plus facilement. 
+
+
+Donc pour associer chaque dépense à un dossier de fichiers de factures il faut remplir le fichier :
+categories.csv qui a cette forme :
+
+Catégorie;Opérations
+D-Alimentaire;COURSES,CARTE,ACHAT
+D-Frais;ASSURANCE,TRANSPORT
+R-Cotisation;DON,COTISATION
+W-Test;pouet, tagazou
+
+
+Il faut donc extraire tous les noms des "Contrepartie" et tous les "Objet de l'opération".
+Afin de pouvoir les associer à chaque catégorie.
+
+
+Faire des compteurs :
+- Contrepartie non trouvées
+- Objet de l'opération non trouvés
+- Opérations problématiques
+
+
+IF 	"VIREMENT INSTANTANE VERS" && "communication structurée" !="" (.strip() == "")
+THEN look into "table de correspondance virement"
+
+IF "RETRAIT D'ARGENT" OR "RETRAIT D'ESPECES" 
+THEN mettre la ligne en rouge et augmenter compteur opérations problématiques de 1
+

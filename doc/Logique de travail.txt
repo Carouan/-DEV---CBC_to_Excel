@@ -1,0 +1,14 @@
+
+
+#Etape 1 - Supprimer des colonnes inutiles
+#Etape 2 - Création des nouvelles colonnes
+#Etape 3 - Renommer colonnes
+#Etape 4 - Réordonner les colonnes
+--------------------------------------------
+#Etape 5 - Exécuter fonction "find_operation_type"
+#Etape 6 - Exécuter fonction "fill_contrepartie_ET_objFact"
+---
+#Etape 7 - Supprimer colonne "Description"
+#Etape 8 - Exécuter fonction "Categorie"
+---
+#Etape 9 - Générer le fichier Excel en commençant par son nom et en terminant par le nom de la feuille.

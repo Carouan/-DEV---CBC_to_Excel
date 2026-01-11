@@ -1,0 +1,24 @@
+# Dictionnaire de mapping pour les catégories
+categories_mapping = {
+    "FRAIS": "Frais généraux",
+    "SALAIRE": "Salaires",
+    "LOYER": "Loyer",
+    "ASSURANCE": "Assurances",
+    "CONSOMMATION": "Consommables",
+    "DEPLACEMENT": "Déplacements",
+    "FRAIS BANCAIRES": "Frais bancaires",
+    "FRAIS POSTAUX": "Frais postaux",
+    "FRAIS TELECOM": "Frais télécom",
+    "FRAIS DIVERS": "Frais divers",
+    "FRAIS ADMINISTRATIFS": "Frais administratifs",
+    "FRAIS DE REPRESENTATION": "Frais de représentation",
+    "FRAIS DE RECEPTION": "Frais de réception",
+    "FRAIS DE MISSION": "Frais de mission",
+    "FRAIS DE CONSULTANCE": "Frais de consultance",
+    "FRAIS DE FORMATION": "Frais de formation",
+    "FRAIS DE PUBLICITE": "Frais de publicité",
+    "FRAIS DE REUNION": "Frais de réunion",
+    "FRAIS DE TRANSPORT": "Frais de transport",
+    "FRAIS DE RESTAURATION": "Frais de restauration",
+    "FRAIS DE DEPLACEMENT": "Frais de déplacement
+}
