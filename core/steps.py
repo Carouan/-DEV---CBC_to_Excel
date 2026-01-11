@@ -7,7 +7,7 @@ from naming import get_output_filename_and_period
 from excel_styles import apply_styles
 
 MINIMAL_SCHEMA = {
-    "Description": ["Description", "Communication libre", "Libellé"],
+    "Description": ["Description", "Libellé", "Libelle"],
     "Montant": ["Montant", "Montant (EUR)"],
     "Valeur": ["Valeur", "Date"],
 }
@@ -38,6 +38,8 @@ def validate_schema(df: pd.DataFrame) -> pd.DataFrame:
 
     if rename_map:
         df = df.rename(columns=rename_map)
+
+    df["Description"] = df["Description"].fillna("").astype(str)
 
     return df
 
@@ -99,7 +101,6 @@ def step4_reorder_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 def step5_find_operation_type(df: pd.DataFrame) -> pd.DataFrame:
     # Étape 5 : Exécuter fonction "find_operation_type
-    df["Description"] = df["Description"].fillna("").astype(str)
     def match_op_type(description: str) -> str:
         for op_type in operation_types:
             if op_type in description:
