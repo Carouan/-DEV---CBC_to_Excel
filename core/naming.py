@@ -1,7 +1,9 @@
 # naming.py
 import os
+
 import pandas as pd
-from config import cptsCBC
+
+from .config import cptsCBC
 
 def parse_filename(file_name: str):
     base_name = os.path.basename(file_name)

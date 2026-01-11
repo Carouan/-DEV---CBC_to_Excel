@@ -3,6 +3,7 @@
 # Valeurs de config :
 DEFAULT_ENCODING = "latin-1"
 DELIMITER = ";"
+DEFAULT_CATEGORY_FILE = "data/categories.csv"
 
 # Liste des types d'opérations
 operation_types = [

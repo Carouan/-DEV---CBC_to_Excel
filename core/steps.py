@@ -2,11 +2,13 @@
 
 import re
 import unicodedata
+
 import pandas as pd
-from config import operation_types
-from categories import build_category_tree_from_csv
-from naming import get_output_filename_and_period
-from excel_styles import apply_styles
+
+from .categories import build_category_tree_from_csv
+from .config import operation_types
+from .excel_styles import apply_styles
+from .naming import get_output_filename_and_period
 
 MINIMAL_SCHEMA = {
     "Description": ["Description", "Libellé", "Libelle"],
@@ -255,7 +257,7 @@ def step8_fill_categorie(df, category_tree_file):
 
     # Associer les catégories
     def assign_category(row):
-        operation = row.get("Type d'opération", "")
+        operation = row.get("Type d’opération", "") or row.get("Type d'opération", "")
         if not operation:
             return None
         category = tree.search(operation)

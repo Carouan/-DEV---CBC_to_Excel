@@ -1,18 +1,19 @@
-from categories import build_category_tree_from_csv
+import csv
+from pathlib import Path
 
-def main():
-    # Charger un arbre de test à partir d'un fichier CSV
-    csv_file = "categories_test.csv"  # Le fichier de test doit exister
-    tree = build_category_tree_from_csv(csv_file)
+from core.categories import build_category_tree_from_csv
 
-    # Tester la recherche de catégories
-    test_operations = ["ACHAT", "COTISATION", "CARTE", "DON", "TRANSPORT"]
-    for operation in test_operations:
-        category = tree.search(operation)
-        if category:
-            print(f"Opération '{operation}' trouvée dans la catégorie : {category}")
-        else:
-            print(f"Opération '{operation}' n'est associée à aucune catégorie.")
 
-if __name__ == "__main__":
-    main()
+def test_build_category_tree_from_csv(tmp_path: Path) -> None:
+    csv_path = tmp_path / "categories.csv"
+    with csv_path.open("w", encoding="utf-8", newline="") as csv_file:
+        writer = csv.writer(csv_file, delimiter=";")
+        writer.writerow(["Catégorie", "Opérations"])
+        writer.writerow(["D-Alimentaire", "ACHAT,CARTE,COURSES"])
+        writer.writerow(["R-Cotisation", "COTISATION,DON"])
+
+    tree = build_category_tree_from_csv(str(csv_path))
+
+    assert tree.search("ACHAT") == "D-Alimentaire"
+    assert tree.search("DON") == "R-Cotisation"
+    assert tree.search("INCONNU") is None

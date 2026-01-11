@@ -48,6 +48,17 @@ class CategoryTree:
             return self.root.search_category(operation)
         return None
 
+    def find_node(self, category_name):
+        current = self.root
+        while current:
+            if category_name == current.name:
+                return current
+            if category_name < current.name:
+                current = current.left
+            else:
+                current = current.right
+        return None
+
 
 def build_category_tree_from_csv(file_path):
     """
@@ -70,4 +81,3 @@ def build_category_tree_from_csv(file_path):
             operations = row["Opérations"].split(",")
             tree.insert(category, operations)
     return tree
-
