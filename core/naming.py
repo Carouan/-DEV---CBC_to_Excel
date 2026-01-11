@@ -31,8 +31,16 @@ def build_period_string(df):
     # Format complet
     fmt_full = "%d.%m.%Y"
 
+    # Si min_date et max_date sont dans même année ET même mois 
+    if (min_date.month == max_date.month) and (min_date.year == max_date.year):
+        # 1er date : 02/03/2023 | 2eme date : 27/03/2023
+        # ex: [02-27(03.2023)]
+        day_min = min_date.day
+        day_max = max_date.day
+        month_year = min_date.strftime("%m.%y")
+        return f"[{day_min}-{day_max}({month_year})]"
     # Si min_date et max_date sont dans la même année
-    if (min_date.year == max_date.year):
+    elif (min_date.year == max_date.year):
         # 1er date : 02/03/2023 | 2eme date : 27/05/2023
         # ex: [02.03-27.05(2023)]
         day_min = min_date.day
@@ -41,14 +49,6 @@ def build_period_string(df):
         month_max = max_date.strftime("%m")
         year = min_date.year
         return f"[{day_min}.{month_min}-{day_max}.{month_max}({year})]"
-    # Si min_date et max_date sont dans même année ET même mois 
-    elif (min_date.month == max_date.month) and (min_date.year == max_date.year):
-        # 1er date : 02/03/2023 | 2eme date : 27/03/2023
-        # ex: [02-27(03.2023)]
-        day_min = min_date.day
-        day_max = max_date.day
-        month_year = min_date.strftime("%m.%y")
-        return f"[{day_min}-{day_max}({month_year})]"
     else:
         dmin_str = min_date.strftime(fmt_full)
         dmax_str = max_date.strftime(fmt_full)
@@ -94,7 +94,7 @@ def get_output_filename_and_period(input_file: str, df: pd.DataFrame):
     period = build_period_string(df)      # ex: [02-27(03/23)]
     date_export_fr = format_export_date(date_part)
     nomCompte = get_nom_compte(account_part)
-    out_file_name = build_new_filename(nomCompte, period, date_export_fr)
+    out_file_name = build_new_filename(date_export_fr, nomCompte, period)
 
     return out_file_name, period
 

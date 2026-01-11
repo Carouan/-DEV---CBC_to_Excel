@@ -14,6 +14,20 @@ MINIMAL_SCHEMA = {
     "Valeur": ["Valeur", "Date"],
 }
 
+def _normalize_text(value: str) -> str:
+    normalized = unicodedata.normalize("NFKD", str(value))
+    normalized = "".join(
+        character for character in normalized if not unicodedata.combining(character)
+    )
+    normalized = normalized.upper()
+    normalized = re.sub(r"\s+", " ", normalized)
+    return normalized.strip()
+
+_OP_TYPE_PATTERNS = [
+    (op_type, re.compile(re.escape(_normalize_text(op_type))))
+    for op_type in operation_types
+]
+
 def validate_schema(df: pd.DataFrame) -> pd.DataFrame:
     """
     Valide le schéma minimal attendu et renomme les colonnes équivalentes si besoin.
