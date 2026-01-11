@@ -8,19 +8,42 @@ from categories import build_category_tree_from_csv
 from naming import get_output_filename_and_period
 from excel_styles import apply_styles
 
-def _normalize_text(value: str) -> str:
-    if not isinstance(value, str):
-        return ""
-    normalized = unicodedata.normalize("NFKD", value)
-    normalized = "".join(char for char in normalized if not unicodedata.combining(char))
-    normalized = normalized.upper()
-    normalized = re.sub(r"\s+", " ", normalized).strip()
-    return normalized
+MINIMAL_SCHEMA = {
+    "Description": ["Description", "Libellé", "Libelle"],
+    "Montant": ["Montant", "Montant (EUR)"],
+    "Valeur": ["Valeur", "Date"],
+}
 
-_OP_TYPE_PATTERNS = [
-    (op_type, re.compile(re.escape(_normalize_text(op_type))))
-    for op_type in operation_types
-]
+def validate_schema(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Valide le schéma minimal attendu et renomme les colonnes équivalentes si besoin.
+    """
+    missing = []
+    rename_map = {}
+
+    for expected, aliases in MINIMAL_SCHEMA.items():
+        if expected in df.columns:
+            continue
+        found = next((alias for alias in aliases if alias in df.columns), None)
+        if found:
+            rename_map[found] = expected
+        else:
+            missing.append(f"{expected} (attendu: {', '.join(aliases)})")
+
+    if missing:
+        existing = ", ".join(df.columns)
+        raise ValueError(
+            "Schéma invalide: colonnes manquantes: "
+            + "; ".join(missing)
+            + f". Colonnes trouvées: {existing}"
+        )
+
+    if rename_map:
+        df = df.rename(columns=rename_map)
+
+    df["Description"] = df["Description"].fillna("").astype(str)
+
+    return df
 
 def step1_clean_columns(df: pd.DataFrame) -> pd.DataFrame:
     # Étape 1 : Suppression des colonnes inutiles
