@@ -1,5 +1,6 @@
 import csv
-from categories import build_category_tree_from_csv, CategoryTree
+
+from .categories import CategoryTree, build_category_tree_from_csv
 
 CATEGORY_FILE = "categories.csv"  # Le fichier principal contenant les catégories et opérations
 
@@ -86,7 +87,7 @@ def main():
             print(f"\nCatégorie '{category_name}' ajoutée avec succès.")
         elif choice == "4":
             category_name, new_operations = add_operation_to_category(tree)
-            existing_node = tree.search(category_name)
+            existing_node = tree.find_node(category_name)
             if existing_node:
                 for operation in new_operations:
                     existing_node.add_operation(operation)
