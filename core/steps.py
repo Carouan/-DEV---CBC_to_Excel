@@ -6,6 +6,43 @@ from categories import build_category_tree_from_csv
 from naming import get_output_filename_and_period
 from excel_styles import apply_styles
 
+MINIMAL_SCHEMA = {
+    "Description": ["Description", "Libellé", "Libelle"],
+    "Montant": ["Montant", "Montant (EUR)"],
+    "Valeur": ["Valeur", "Date"],
+}
+
+def validate_schema(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Valide le schéma minimal attendu et renomme les colonnes équivalentes si besoin.
+    """
+    missing = []
+    rename_map = {}
+
+    for expected, aliases in MINIMAL_SCHEMA.items():
+        if expected in df.columns:
+            continue
+        found = next((alias for alias in aliases if alias in df.columns), None)
+        if found:
+            rename_map[found] = expected
+        else:
+            missing.append(f"{expected} (attendu: {', '.join(aliases)})")
+
+    if missing:
+        existing = ", ".join(df.columns)
+        raise ValueError(
+            "Schéma invalide: colonnes manquantes: "
+            + "; ".join(missing)
+            + f". Colonnes trouvées: {existing}"
+        )
+
+    if rename_map:
+        df = df.rename(columns=rename_map)
+
+    df["Description"] = df["Description"].fillna("").astype(str)
+
+    return df
+
 def step1_clean_columns(df: pd.DataFrame) -> pd.DataFrame:
     # Étape 1 : Suppression des colonnes inutiles
     columns_to_remove = [

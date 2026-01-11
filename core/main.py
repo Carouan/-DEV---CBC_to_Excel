@@ -1,6 +1,7 @@
 import argparse
 import pandas as pd
 from steps import (
+    validate_schema,
     step1_clean_columns,
     step2_create_new_columns,
     step3_rename_columns,
@@ -58,13 +59,14 @@ def parse_args() -> argparse.Namespace:
     )
     return parser.parse_args()
 # --- MAIN ---
-def main() -> None:
-    args = parse_args()
-    try:
-        df = read_input_csv(args.input, args.encoding, args.delimiter)
-    except (FileNotFoundError, UnicodeDecodeError, ValueError) as exc:
-        print(f"Erreur : {exc}")
-        raise SystemExit(1)
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: main.py <fichier.csv>")
+        sys.exit(1)
+    input_file = sys.argv[1]
+    # Charger le CSV
+    df = pd.read_csv(input_file, sep=";", encoding="latin-1")
+    df = validate_schema(df)
     # *****     VISUAL STEPS     *****
     df = step1_clean_columns(df)
     df = step2_create_new_columns(df)
