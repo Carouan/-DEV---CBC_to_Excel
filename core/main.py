@@ -2,6 +2,7 @@
 import sys
 import pandas as pd
 from steps import (
+    validate_schema,
     step1_clean_columns,
     step2_create_new_columns,
     step3_rename_columns,
@@ -20,7 +21,7 @@ def main():
     input_file = sys.argv[1]
     # Charger le CSV
     df = pd.read_csv(input_file, sep=";", encoding="latin-1")
-    df["Date"] = pd.to_datetime(df["Date"], dayfirst=True, errors="coerce")
+    df = validate_schema(df)
     # *****     VISUAL STEPS     *****
     df = step1_clean_columns(df)
     df = step2_create_new_columns(df)

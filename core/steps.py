@@ -6,6 +6,41 @@ from categories import build_category_tree_from_csv
 from naming import get_output_filename_and_period
 from excel_styles import apply_styles
 
+MINIMAL_SCHEMA = {
+    "Description": ["Description", "Communication libre", "Libellé"],
+    "Montant": ["Montant", "Montant (EUR)"],
+    "Valeur": ["Valeur", "Date"],
+}
+
+def validate_schema(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Valide le schéma minimal attendu et renomme les colonnes équivalentes si besoin.
+    """
+    missing = []
+    rename_map = {}
+
+    for expected, aliases in MINIMAL_SCHEMA.items():
+        if expected in df.columns:
+            continue
+        found = next((alias for alias in aliases if alias in df.columns), None)
+        if found:
+            rename_map[found] = expected
+        else:
+            missing.append(f"{expected} (attendu: {', '.join(aliases)})")
+
+    if missing:
+        existing = ", ".join(df.columns)
+        raise ValueError(
+            "Schéma invalide: colonnes manquantes: "
+            + "; ".join(missing)
+            + f". Colonnes trouvées: {existing}"
+        )
+
+    if rename_map:
+        df = df.rename(columns=rename_map)
+
+    return df
+
 def step1_clean_columns(df: pd.DataFrame) -> pd.DataFrame:
     # Étape 1 : Suppression des colonnes inutiles
     columns_to_remove = [
@@ -64,6 +99,7 @@ def step4_reorder_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 def step5_find_operation_type(df: pd.DataFrame) -> pd.DataFrame:
     # Étape 5 : Exécuter fonction "find_operation_type
+    df["Description"] = df["Description"].fillna("").astype(str)
     def match_op_type(description: str) -> str:
         for op_type in operation_types:
             if op_type in description:
