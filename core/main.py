@@ -1,5 +1,4 @@
-# main.py
-import sys
+import argparse
 import pandas as pd
 from steps import (
     step1_clean_columns,
@@ -12,15 +11,60 @@ from steps import (
     step8_fill_categorie,
     step9_export_excel
 )
+from config import DEFAULT_ENCODING, DELIMITER
+
+
+def read_input_csv(input_file: str, encoding: str, delimiter: str) -> pd.DataFrame:
+    try:
+        df = pd.read_csv(input_file, sep=delimiter, encoding=encoding)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Le fichier '{input_file}' est introuvable.")
+    except UnicodeDecodeError as exc:
+        raise UnicodeDecodeError(
+            exc.encoding,
+            exc.object,
+            exc.start,
+            exc.end,
+            f"Impossible de lire '{input_file}' avec l'encodage '{encoding}'.",
+        ) from exc
+
+    required_columns = {"Description", "Montant", "Valeur"}
+    missing_columns = required_columns.difference(df.columns)
+    if missing_columns:
+        missing_list = ", ".join(sorted(missing_columns))
+        raise ValueError(f"Colonnes manquantes dans le CSV : {missing_list}.")
+
+    return df
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Convertit un relevé CBC en fichier Excel."
+    )
+    parser.add_argument(
+        "--input",
+        required=True,
+        help="Chemin vers le fichier CSV d'entrée.",
+    )
+    parser.add_argument(
+        "--encoding",
+        default=DEFAULT_ENCODING,
+        help=f"Encodage du CSV (défaut: {DEFAULT_ENCODING}).",
+    )
+    parser.add_argument(
+        "--delimiter",
+        default=DELIMITER,
+        help=f"Délimiteur du CSV (défaut: {DELIMITER}).",
+    )
+    return parser.parse_args()
 # --- MAIN ---
-def main():
-    if len(sys.argv) < 2:
-        print("Usage: main.py <fichier.csv>")
-        sys.exit(1)
-    input_file = sys.argv[1]
-    # Charger le CSV
-    df = pd.read_csv(input_file, sep=";", encoding="latin-1")
-    df["Date"] = pd.to_datetime(df["Date"], dayfirst=True, errors="coerce")
+def main() -> None:
+    args = parse_args()
+    try:
+        df = read_input_csv(args.input, args.encoding, args.delimiter)
+    except (FileNotFoundError, UnicodeDecodeError, ValueError) as exc:
+        print(f"Erreur : {exc}")
+        raise SystemExit(1)
     # *****     VISUAL STEPS     *****
     df = step1_clean_columns(df)
     df = step2_create_new_columns(df)
@@ -39,7 +83,7 @@ def main():
     
     # *****     FINAL STEP     *****
     #
-    df = step9_export_excel(df, input_file)
+    df = step9_export_excel(df, args.input)
     
 if __name__ == "__main__":
     main()
