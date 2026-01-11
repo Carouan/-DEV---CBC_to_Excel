@@ -29,12 +29,6 @@ def read_input_csv(input_file: str, encoding: str, delimiter: str) -> pd.DataFra
             f"Impossible de lire '{input_file}' avec l'encodage '{encoding}'.",
         ) from exc
 
-    required_columns = {"Description", "Montant", "Valeur"}
-    missing_columns = required_columns.difference(df.columns)
-    if missing_columns:
-        missing_list = ", ".join(sorted(missing_columns))
-        raise ValueError(f"Colonnes manquantes dans le CSV : {missing_list}.")
-
     return df
 
 
@@ -58,14 +52,12 @@ def parse_args() -> argparse.Namespace:
         help=f"Délimiteur du CSV (défaut: {DELIMITER}).",
     )
     return parser.parse_args()
+
+
 # --- MAIN ---
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: main.py <fichier.csv>")
-        sys.exit(1)
-    input_file = sys.argv[1]
-    # Charger le CSV
-    df = pd.read_csv(input_file, sep=";", encoding="latin-1")
+    args = parse_args()
+    df = read_input_csv(args.input, args.encoding, args.delimiter)
     df = validate_schema(df)
     # *****     VISUAL STEPS     *****
     df = step1_clean_columns(df)
