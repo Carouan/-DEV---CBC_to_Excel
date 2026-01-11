@@ -1,10 +1,26 @@
 # steps.py
 
+import re
+import unicodedata
 import pandas as pd
 from config import operation_types
 from categories import build_category_tree_from_csv
 from naming import get_output_filename_and_period
 from excel_styles import apply_styles
+
+def _normalize_text(value: str) -> str:
+    if not isinstance(value, str):
+        return ""
+    normalized = unicodedata.normalize("NFKD", value)
+    normalized = "".join(char for char in normalized if not unicodedata.combining(char))
+    normalized = normalized.upper()
+    normalized = re.sub(r"\s+", " ", normalized).strip()
+    return normalized
+
+_OP_TYPE_PATTERNS = [
+    (op_type, re.compile(re.escape(_normalize_text(op_type))))
+    for op_type in operation_types
+]
 
 def step1_clean_columns(df: pd.DataFrame) -> pd.DataFrame:
     # Étape 1 : Suppression des colonnes inutiles
@@ -64,12 +80,17 @@ def step4_reorder_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 def step5_find_operation_type(df: pd.DataFrame) -> pd.DataFrame:
     # Étape 5 : Exécuter fonction "find_operation_type
-    def match_op_type(description: str) -> str:
-        for op_type in operation_types:
-            if op_type in description:
+    if "Description" not in df.columns:
+        return df
+
+    normalized_descriptions = df["Description"].apply(_normalize_text)
+
+    def match_op_type(normalized_description: str) -> str:
+        for op_type, pattern in _OP_TYPE_PATTERNS:
+            if pattern.search(normalized_description):
                 return op_type
-        return "*** NOT FIND ***" 
-    df.loc[:, "Type d’opération"] = df["Description"].apply(match_op_type)
+        return None
+    df.loc[:, "Type d’opération"] = normalized_descriptions.apply(match_op_type)
     #df["Type d’opération"] = df["Description"].apply(match_op_type)
     return df
 
@@ -96,27 +117,28 @@ def step6_fill_contrepartie_ET_objFact(df: pd.DataFrame) -> pd.DataFrame:
         # Vérifie si Contrepartie est vide ou juste espaces
         if current_contrepartie.strip() == "":
             desc = row.get("Description", "")
+            normalized_desc = _normalize_text(desc)
             # eventuellement, si tu as besoin du type
             # op_type = row.get("Type d'opération", "")
 
             # -- CAS 1 : CONSOMMATION ou FORFAIT
             #    => Contrepartie = "COMPTE D'ENTREPRISE CBC"
             #    => Objet de l’opération = "Frais bancaires"
-            if desc.startswith("CONSOMMATION") or desc.startswith("FORFAIT"):
+            if normalized_desc.startswith("CONSOMMATION") or normalized_desc.startswith("FORFAIT"):
                 current_contrepartie = "COMPTE D'ENTREPRISE CBC"
                 current_objet = "Frais bancaires"
 
             # -- CAS 2 : DECOMPTE
             #    => Contrepartie = "MASTERCARD BUSINESS BLUE CBC"
             #    => Objet = "Frais bancaires"
-            elif desc.startswith("DECOMPTE"):
+            elif normalized_desc.startswith("DECOMPTE"):
                 current_contrepartie = "MASTERCARD BUSINESS BLUE CBC"
                 current_objet = "Frais bancaires"
 
             # -- CAS 3 : DOMICILIATION
             #    => Contrepartie = ce qui est entre "CREANCIER       : " et "REF."
             #    => Objet de l’opération = ce qui vient après "COMMUNICATION   :"
-            elif desc.startswith("DOMICILIATION"):
+            elif normalized_desc.startswith("DOMICILIATION"):
                 part_creancier = ""
                 part_comm = ""
 
@@ -149,7 +171,7 @@ def step6_fill_contrepartie_ET_objFact(df: pd.DataFrame) -> pd.DataFrame:
 
             # -- CAS 4 : PAIEMENT*
             #    => On récupère la partie entre "HEURES " et " AVEC"
-            elif desc.startswith("PAIEMENT"):
+            elif normalized_desc.startswith("PAIEMENT"):
                 if "HEURES " in desc and " AVEC" in desc:
                     start = desc.index("HEURES ") + len("HEURES ")
                     end = desc.index(" AVEC", start)
@@ -228,6 +250,9 @@ def step9_export_excel(df: pd.DataFrame, input_file: str) -> pd.DataFrame:
     sheet_name = period.replace("[", "").replace("]", "")
     sheet_name = sheet_name.replace("/", ".").replace("\\", ".")
     sheet_name = sheet_name[:31]  # Excel limite souvent les noms de feuille à 31 caractères max
+
+    if "Type d’opération" in df.columns:
+        df["Type d’opération"] = df["Type d’opération"].fillna("Non trouvé")
 
     df.to_excel(out_file_name, index=False, sheet_name=sheet_name, engine="xlsxwriter") #utiliser openpyxl ou xlsxwriter
     # Appliquer les styles Excel
