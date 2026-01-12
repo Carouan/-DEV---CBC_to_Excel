@@ -176,7 +176,6 @@ def step5_find_operation_type(df: pd.DataFrame) -> pd.DataFrame:
         return None
 
     df.loc[:, "Type d’opération"] = normalized_descriptions.apply(match_op_type)
-    # df["Type d’opération"] = df["Description"].apply(match_op_type)
     return df
 
 
@@ -212,7 +211,7 @@ def step6_fill_contrepartie_ET_objFact(df: pd.DataFrame) -> pd.DataFrame:
         if current_contrepartie.strip() == "":
             desc = row.get("Description", "")
             normalized_desc = _normalize_text(desc)
-            # eventuellement, si tu as besoin du type
+            # éventuellement, si tu as besoin du type
             # op_type = row.get("Type d'opération", "")
 
             # -- CAS 1 : CONSOMMATION ou FORFAIT

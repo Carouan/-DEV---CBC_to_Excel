@@ -6,5 +6,15 @@
     "python.testing.pytestEnabled": true,
     "cSpell.ignoreWords": [
         "cpts"
+    ],
+    "cSpell.words": [
+        "categorie",
+        "Catégorie",
+        "creancier",
+        "CREANCIER",
+        "d’opération",
+        "DECOMPTE",
+        "github",
+        "mkdocs"
     ]
 }
