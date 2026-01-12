@@ -1,5 +1,7 @@
 # config.py
 
+from typing import Any
+
 # Valeurs de config :
 DEFAULT_ENCODING = "latin-1"
 DELIMITER = ";"
@@ -43,6 +45,35 @@ cptsCBC = {
 }
 
 # Liste des Catégories :
-categories = {
+categories: dict[str, Any] = {
     # S’il y a un 2ᵉ dictionnaire ou d’autres constantes
+    "Revenus": [
+        "Salaire",
+        "Remboursement",
+        "Virement reçu",
+        "Indemnisation",
+    ],
+    "Dépenses fixes": [
+        "Loyer",
+        "Électricité",
+        "Eau",
+        "Internet",
+        "Téléphone",
+        "Assurance",
+        "Abonnement",
+    ],
+    "Courses": [
+        "Supermarché",
+        "Épicerie",
+        "Alimentation",
+    ],
+    "Loisirs": [
+        "Restaurant",
+        "Café",
+        "Cinéma",
+        "Voyage",
+        "Sport",
+        "Jeux vidéo",
+    ],
+    "
 }

@@ -18,6 +18,14 @@ MINIMAL_SCHEMA = {
 
 
 def _normalize_text(value: str) -> str:
+    """
+    Normalise le texte pour faciliter la recherche de motifs.
+    1. Décompose les caractères Unicode (NFKD)
+    2. Supprime les accents
+    3. Met en majuscules
+    4. Remplace les espaces multiples par un espace simple
+    5. Supprime les espaces en début et fin
+    """
     normalized = unicodedata.normalize("NFKD", str(value))
     normalized = "".join(
         character for character in normalized if not unicodedata.combining(character)
@@ -81,9 +89,8 @@ def step1_clean_columns(df: pd.DataFrame) -> pd.DataFrame:
         "Adresse contrepartie",
         "communication structurée",
     ]
-    df = df.drop(columns=columns_to_remove, errors="ignore")
+    df = df.drop(columns=columns_to_remove, errors='ignore')
     return df
-
 
 def step2_create_new_columns(df: pd.DataFrame) -> pd.DataFrame:
     # Étape 2 : Création des nouvelles colonnes
@@ -98,15 +105,15 @@ def step2_create_new_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def step3_rename_columns(df: pd.DataFrame) -> pd.DataFrame:
-    # Étape 3 : Renommage des colonnes existantes
-    df = df.rename(
-        columns={
-            "Numéro de l'extrait": "N°extrait",
-            "Valeur": "Date",
-            "Nom contrepartie": "Contrepartie",
-            "Communication libre": "Objet de l’opération",
-        }
-    )
+    """
+    Étape 3 : Renommage des colonnes existantes et conversion des types.
+    """
+    df = df.rename(columns={
+        "Numéro de l'extrait": "N°extrait",
+        "Valeur": "Date",
+        "Nom contrepartie": "Contrepartie",
+        "Communication libre": "Objet de l’opération"
+    })
     df["Date"] = pd.to_datetime(df["Date"], dayfirst=True, errors="coerce")
     df["Montant"] = (
         df["Montant"]
@@ -119,7 +126,9 @@ def step3_rename_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def step4_reorder_columns(df: pd.DataFrame) -> pd.DataFrame:
-    # Étape 4 : Réorganisation de l'ordre des colonnes
+    """
+    Étape 4 : Réorganisation de l'ordre des colonnes selon un ordre prédéfini.
+    """
     columns_order = [
         "N°extrait",
         "Date",
@@ -147,13 +156,17 @@ def step4_reorder_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def step5_find_operation_type(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Étape 5 : Remplit la colonne 'Type d’opération' en fonction de la 'Description'.
+    Utilise des motifs prédéfinis pour identifier le type d’opération.
+    """
     # Étape 5 : Exécuter fonction "find_operation_type
     if "Description" not in df.columns:
         return df
 
     normalized_descriptions = df["Description"].apply(_normalize_text)
 
-    def match_op_type(normalized_description: str) -> str:
+    def match_op_type(normalized_description: str) -> str|None:
         for op_type, pattern in _OP_TYPE_PATTERNS:
             if pattern.search(normalized_description):
                 return op_type
@@ -168,12 +181,20 @@ def step6_fill_contrepartie_ET_objFact(df: pd.DataFrame) -> pd.DataFrame:
     """
     Étape 6 :
     1) Si 'Contrepartie' est vide (ou juste des espaces),
-       alors on regarde la 'Description' (et éventuellement 'Type d’opération')
-       pour remplir 'Contrepartie' et 'Objet de l’opération'.
+    alors on regarde la 'Description' (et éventuellement 'Type d’opération')
+    pour remplir 'Contrepartie' et 'Objet de l’opération'.
     2) Sinon, on laisse tout inchangé.
     """
 
     def fill_contrepartie_et_objet(row):
+        """
+        Remplit 'Contrepartie' et 'Objet de l’opération' selon la 'Description'.
+        1) Si 'Contrepartie' est vide (ou juste des espaces),
+        alors on regarde la 'Description' (et éventuellement 'Type d’opération')
+        pour remplir 'Contrepartie' et 'Objet de l’opération'.
+        2) Sinon, on laisse tout inchangé.
+        Retourne un tuple (Contrepartie, Objet de l’opération).
+        """
         # On part des valeurs existantes
         current_contrepartie = row.get("Contrepartie", "")
         current_objet = row.get("Objet de l’opération", "")
