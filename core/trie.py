@@ -1,13 +1,16 @@
+"""Interactive utility to manage category CSV files."""
+
+from __future__ import annotations
+
 import csv
 
 from .categories import CategoryTree, build_category_tree_from_csv
 
-CATEGORY_FILE = (
-    "categories.csv"  # Le fichier principal contenant les catégories et opérations
-)
+CATEGORY_FILE = "categories.csv"
 
 
-def display_menu():
+def display_menu() -> None:
+    """Display the interactive menu."""
     print("\nGestion des Catégories")
     print("=======================")
     print("1. Afficher toutes les catégories")
@@ -18,7 +21,8 @@ def display_menu():
     print("=======================")
 
 
-def display_categories(tree):
+def display_categories(tree: CategoryTree) -> None:
+    """Print all categories stored in the tree."""
     print("\nListe des catégories :")
 
     def _traverse(node):
@@ -33,7 +37,8 @@ def display_categories(tree):
         print("Aucune catégorie disponible.")
 
 
-def search_category(tree):
+def search_category(tree: CategoryTree) -> None:
+    """Prompt for an operation name and display the matching category."""
     operation = input("\nEntrez le type d'opération à rechercher : ").strip()
     category = tree.search(operation)
     if category:
@@ -42,7 +47,8 @@ def search_category(tree):
         print(f"L'opération '{operation}' n'est associée à aucune catégorie.")
 
 
-def add_new_category():
+def add_new_category() -> tuple[str, list[str]]:
+    """Prompt for a new category and its operations."""
     category_name = input("\nEntrez le nom de la nouvelle catégorie : ").strip()
     operations = (
         input("Entrez les types d'opérations associés, séparés par des virgules : ")
@@ -52,7 +58,8 @@ def add_new_category():
     return category_name, operations
 
 
-def add_operation_to_category(tree):
+def add_operation_to_category(tree: CategoryTree) -> tuple[str, list[str]]:
+    """Prompt for a category and operations to append."""
     category_name = input("\nEntrez le nom de la catégorie existante : ").strip()
     new_operations = (
         input("Entrez les nouvelles opérations à ajouter, séparées par des virgules : ")
@@ -62,9 +69,12 @@ def add_operation_to_category(tree):
     return category_name, new_operations
 
 
-def save_tree_to_csv(tree, file_path):
-    """
-    Sauvegarde l'arbre dans un fichier CSV.
+def save_tree_to_csv(tree: CategoryTree, file_path: str) -> None:
+    """Persist the category tree to a CSV file.
+
+    Args:
+        tree: Category tree to serialize.
+        file_path: Destination CSV path.
     """
     with open(file_path, mode="w", encoding="utf-8", newline="") as file:
         writer = csv.writer(file, delimiter=";")
@@ -79,8 +89,8 @@ def save_tree_to_csv(tree, file_path):
         _traverse_and_save(tree.root)
 
 
-def main():
-    # Charger l'arbre à partir du fichier CSV
+def main() -> None:
+    """Run the interactive category manager."""
     try:
         tree = build_category_tree_from_csv(CATEGORY_FILE)
     except FileNotFoundError:

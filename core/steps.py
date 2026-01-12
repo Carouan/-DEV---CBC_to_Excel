@@ -1,4 +1,4 @@
-# steps.py
+"""Transformation steps for converting CBC CSV exports to Excel."""
 
 import re
 import unicodedata
@@ -18,13 +18,13 @@ MINIMAL_SCHEMA = {
 
 
 def _normalize_text(value: str) -> str:
-    """
-    Normalise le texte pour faciliter la recherche de motifs.
-    1. Décompose les caractères Unicode (NFKD)
-    2. Supprime les accents
-    3. Met en majuscules
-    4. Remplace les espaces multiples par un espace simple
-    5. Supprime les espaces en début et fin
+    """Normalize text to improve matching reliability.
+
+    Args:
+        value: Text value to normalize.
+
+    Returns:
+        Normalized string without diacritics, extra spaces, or lowercase letters.
     """
     normalized = unicodedata.normalize("NFKD", str(value))
     normalized = "".join(
@@ -42,8 +42,16 @@ _OP_TYPE_PATTERNS = [
 
 
 def validate_schema(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Valide le schéma minimal attendu et renomme les colonnes équivalentes si besoin.
+    """Validate the minimal schema and align column names.
+
+    Args:
+        df: Input DataFrame.
+
+    Returns:
+        DataFrame with normalized column names and a sanitized Description column.
+
+    Raises:
+        ValueError: If required columns are missing.
     """
     missing = []
     rename_map = {}
@@ -74,7 +82,7 @@ def validate_schema(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def step1_clean_columns(df: pd.DataFrame) -> pd.DataFrame:
-    # Étape 1 : Suppression des colonnes inutiles
+    """Drop columns that are not required in the output."""
     columns_to_remove = [
         "Numéro de compte",
         "Nom de la rubrique",
@@ -94,7 +102,7 @@ def step1_clean_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def step2_create_new_columns(df: pd.DataFrame) -> pd.DataFrame:
-    # Étape 2 : Création des nouvelles colonnes
+    """Add the extra columns expected in the Excel output."""
     df["Type d’opération"] = ""
     df["Projet"] = ""
     df["Catégorie"] = ""
@@ -106,8 +114,13 @@ def step2_create_new_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def step3_rename_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Étape 3 : Renommage des colonnes existantes et conversion des types.
+    """Rename existing columns and convert data types.
+
+    Args:
+        df: DataFrame after column cleanup.
+
+    Returns:
+        DataFrame with renamed columns and parsed date/amount fields.
     """
     df = df.rename(
         columns={
@@ -129,9 +142,7 @@ def step3_rename_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def step4_reorder_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Étape 4 : Réorganisation de l'ordre des colonnes selon un ordre prédéfini.
-    """
+    """Reorder the columns into the canonical Excel layout."""
     columns_order = [
         "N°extrait",
         "Date",
@@ -159,10 +170,7 @@ def step4_reorder_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def step5_find_operation_type(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Étape 5 : Remplit la colonne 'Type d’opération' en fonction de la 'Description'.
-    Utilise des motifs prédéfinis pour identifier le type d’opération.
-    """
+    """Fill the operation type column based on Description patterns."""
     # Étape 5 : Exécuter fonction "find_operation_type
     if "Description" not in df.columns:
         return df
@@ -180,23 +188,17 @@ def step5_find_operation_type(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def step6_fill_contrepartie_ET_objFact(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Étape 6 :
-    1) Si 'Contrepartie' est vide (ou juste des espaces),
-    alors on regarde la 'Description' (et éventuellement 'Type d’opération')
-    pour remplir 'Contrepartie' et 'Objet de l’opération'.
-    2) Sinon, on laisse tout inchangé.
+    """Fill counterpart and operation object when missing.
+
+    Args:
+        df: DataFrame with Description and related columns.
+
+    Returns:
+        DataFrame with populated Contrepartie and Objet de l’opération columns.
     """
 
     def fill_contrepartie_et_objet(row):
-        """
-        Remplit 'Contrepartie' et 'Objet de l’opération' selon la 'Description'.
-        1) Si 'Contrepartie' est vide (ou juste des espaces),
-        alors on regarde la 'Description' (et éventuellement 'Type d’opération')
-        pour remplir 'Contrepartie' et 'Objet de l’opération'.
-        2) Sinon, on laisse tout inchangé.
-        Retourne un tuple (Contrepartie, Objet de l’opération).
-        """
+        """Return Contrepartie and Objet de l’opération from Description details."""
         # On part des valeurs existantes
         current_contrepartie = row.get("Contrepartie", "")
         current_objet = row.get("Objet de l’opération", "")
@@ -298,17 +300,20 @@ def step6_fill_contrepartie_ET_objFact(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def step7_drop_description(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Étape 7 : Supprime la colonne 'Description' si elle existe encore.
-    """
+    """Drop the Description column after extraction."""
     df = df.drop(columns=["Description"], errors="ignore")
     return df
 
 
-def step8_fill_categorie(df, category_tree_file):
-    """
-    Étape 8 : Associer des catégories à chaque ligne selon le type d'opération.
-    La contrepartie ou l'objet de l'opération.
+def step8_fill_categorie(df: pd.DataFrame, category_tree_file: str) -> pd.DataFrame:
+    """Assign categories based on operation type.
+
+    Args:
+        df: DataFrame to categorize.
+        category_tree_file: Path to the category CSV file.
+
+    Returns:
+        DataFrame with the Catégorie column populated.
     """
     # Charger l'arbre de catégories
     tree = build_category_tree_from_csv(category_tree_file)
@@ -338,12 +343,15 @@ def step9_export_excel(
     input_file: str,
     output_file: str | None = None,
 ) -> pd.DataFrame:
-    """
-    Étape 9 :
-    1) Génère le nom du fichier Excel à partir du CSV d’entrée (via naming.py)
-       et de la période calculée dans le df.
-    2) Détermine aussi le nom de feuille (sheet_name) en se basant sur la période.
-    3) Exporte le df en Excel.
+    """Export the final DataFrame as an Excel workbook.
+
+    Args:
+        df: Transformed DataFrame to export.
+        input_file: Original CSV path (used to derive default names).
+        output_file: Optional output file path for the Excel workbook.
+
+    Returns:
+        DataFrame that was exported.
     """
     if output_file:
         out_file_name = output_file

@@ -1,35 +1,61 @@
-class CategoryNode:
-    def __init__(self, category_name):
-        self.name = category_name
-        self.left = None
-        self.right = None
-        self.operations = set()
+"""Category tree utilities for CBC transaction classification."""
 
-    def add_operation(self, operation):
+from __future__ import annotations
+
+import csv
+from typing import Iterable
+
+
+class CategoryNode:
+    """Binary tree node storing a category and its operations."""
+
+    def __init__(self, category_name: str) -> None:
+        self.name = category_name
+        self.left: CategoryNode | None = None
+        self.right: CategoryNode | None = None
+        self.operations: set[str] = set()
+
+    def add_operation(self, operation: str) -> None:
+        """Add a new operation label to this category."""
         self.operations.add(operation)
 
-    def search_category(self, operation):
+    def search_category(self, operation: str) -> str | None:
+        """Search for the category containing the given operation.
+
+        The tree is ordered by category name, so we must traverse all nodes
+        when searching by operation.
+        """
         if operation in self.operations:
             return self.name
-        elif self.left and operation < self.name:
-            return self.left.search_category(operation)
-        elif self.right and operation > self.name:
-            return self.right.search_category(operation)
+        if self.left:
+            found = self.left.search_category(operation)
+            if found:
+                return found
+        if self.right:
+            found = self.right.search_category(operation)
+            if found:
+                return found
         return None
 
 
 class CategoryTree:
-    def __init__(self):
-        self.root = None
+    """Binary search tree that maps operations to categories."""
 
-    def insert(self, category_name, operations):
+    def __init__(self) -> None:
+        self.root: CategoryNode | None = None
+
+    def insert(self, category_name: str, operations: Iterable[str]) -> None:
+        """Insert a new category and associated operations."""
         if not self.root:
             self.root = CategoryNode(category_name)
             self.root.operations.update(operations)
         else:
             self._insert_node(self.root, category_name, operations)
 
-    def _insert_node(self, node, category_name, operations):
+    def _insert_node(
+        self, node: CategoryNode, category_name: str, operations: Iterable[str]
+    ) -> None:
+        """Recursive helper to insert nodes in the tree."""
         if category_name < node.name:
             if not node.left:
                 node.left = CategoryNode(category_name)
@@ -43,12 +69,14 @@ class CategoryTree:
             else:
                 self._insert_node(node.right, category_name, operations)
 
-    def search(self, operation):
+    def search(self, operation: str) -> str | None:
+        """Return the category for the operation, if present."""
         if self.root:
             return self.root.search_category(operation)
         return None
 
-    def find_node(self, category_name):
+    def find_node(self, category_name: str) -> CategoryNode | None:
+        """Return the node that matches a category name."""
         current = self.root
         while current:
             if category_name == current.name:
@@ -60,18 +88,15 @@ class CategoryTree:
         return None
 
 
-def build_category_tree_from_csv(file_path):
-    """
-    Charge un arbre binaire à partir d'un fichier CSV contenant les catégories et leurs opérations associées.
-    Exemple de fichier CSV :
-    Catégorie;Opérations
-    D-Alimentaire;ACHAT,CARTE,COURSES
-    R-Cotisation;COTISATION,DON
+def build_category_tree_from_csv(file_path: str) -> CategoryTree:
+    """Load categories and operations from a CSV file into a tree.
 
-    categories.csv
-    """
-    import csv
+    Args:
+        file_path: Path to the CSV file containing category definitions.
 
+    Returns:
+        CategoryTree populated with the CSV content.
+    """
     tree = CategoryTree()
 
     with open(file_path, mode="r", encoding="utf-8") as file:

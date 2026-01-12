@@ -7,9 +7,11 @@ __pycache__/
 htmlcov/
 build/
 dist/
+*.egg-info/
 .venv/
 venv/
 .DS_Store
 
-data/in_csv/*.csv
-data/out_xlsx/*.xlsx
+# Data directories
+/data/in_csv/*.csv
+/data/out_xlsx/*.xlsx
