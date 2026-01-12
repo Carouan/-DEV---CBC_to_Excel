@@ -140,7 +140,7 @@ def step5_find_operation_type(df: pd.DataFrame) -> pd.DataFrame:
 
     normalized_descriptions = df["Description"].apply(_normalize_text)
 
-    def match_op_type(normalized_description: str) -> str:
+    def match_op_type(normalized_description: str) -> str|None:
         for op_type, pattern in _OP_TYPE_PATTERNS:
             if pattern.search(normalized_description):
                 return op_type
