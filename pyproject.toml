@@ -31,6 +31,9 @@ docs = [
     "mkdocs-literate-nav",
 ]
 
+[project.scripts]
+cbc-to-excel = "core.main:main"
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["core*"]
