@@ -1,11 +1,27 @@
-# config.py
+"""Configuration values for CBC to Excel."""
 
-from typing import Any
+from __future__ import annotations
 
-# Valeurs de config :
+from importlib import resources
+
+# Valeurs de config
 DEFAULT_ENCODING = "latin-1"
 DELIMITER = ";"
-DEFAULT_CATEGORY_FILE = "data/categories.csv"
+DEFAULT_OUTPUT_DIR = "data/out_xlsx"
+
+
+def _default_category_file() -> str:
+    """Return the default category CSV path bundled with the package.
+
+    Falls back to the historical data/ path if package resources are missing.
+    """
+    try:
+        return str(resources.files("core.resources").joinpath("categories.csv"))
+    except (AttributeError, ModuleNotFoundError, FileNotFoundError):
+        return "data/categories.csv"
+
+
+DEFAULT_CATEGORY_FILE = _default_category_file()
 
 # Liste des types d'opérations
 operation_types = [
@@ -44,9 +60,8 @@ cptsCBC = {
     "": "KBC_Visa",
 }
 
-# Liste des Catégories :
-categories: dict[str, Any] = {
-    # S’il y a un 2ᵉ dictionnaire ou d’autres constantes
+# Liste des Catégories
+categories: dict[str, list[str]] = {
     "Revenus": [
         "Salaire",
         "Remboursement",

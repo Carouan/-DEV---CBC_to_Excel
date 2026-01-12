@@ -8,6 +8,7 @@ avec enrichissement automatique (type d’opération, contrepartie, catégorie, 
 - Nettoyage et normalisation des colonnes CBC.
 - Catégorisation automatique via un fichier de catégories.
 - Génération d'un fichier Excel prêt à l'analyse.
+- Exécutable Windows portable basé sur PyInstaller.
 
 ## Prérequis
 
@@ -19,41 +20,52 @@ avec enrichissement automatique (type d’opération, contrepartie, catégorie, 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev]"
+pip install -e .
 ```
 
 ## Utilisation
 
-Depuis la racine du dépôt :
+Commande canonique (un fichier CSV) :
 
 ```bash
-python -m core.main --input data/in_csv/export_BE50732047041718_20250118_1200.csv
+cbc-to-excel --input "path/to/file.csv" --output-dir "path/to/out"
 ```
 
-Avec le script console :
+Si `--output-dir` est omis, la sortie est écrite dans `data/out_xlsx/`.
+
+Exemple avec chemin complet :
 
 ```bash
-cbc-to-excel --input data/in_csv/export_BE50732047041718_20250118_1200.csv
+cbc-to-excel --input data/in_csv/export.csv --output-dir data/out_xlsx
 ```
 
 Options disponibles :
 
 ```bash
-python -m core.main \
-  --input data/in_csv/export_BE50732047041718_20250118_1200.csv \
+cbc-to-excel \
+  --input data/in_csv/export.csv \
+  --output-dir data/out_xlsx \
   --encoding latin-1 \
   --delimiter ";" \
-  --categories data/categories.csv \
-  --output data/out_xlsx/rapport.xlsx
+  --categories data/categories.csv
 ```
+
+Par défaut, l'outil charge un fichier de catégories embarqué dans le package. Si la
+ressource n'est pas disponible, il utilise `data/categories.csv` du dépôt.
 
 Pour désactiver l’association des catégories :
 
 ```bash
-python -m core.main --input data/in_csv/export_BE50732047041718_20250118_1200.csv --no-categories
+cbc-to-excel --input data/in_csv/export.csv --no-categories
 ```
 
 Les CSV d'entrée locaux sont attendus sous `data/in_csv/` (ce dossier est ignoré par git).
+
+## Exécutable Windows portable
+
+- L'exécutable `cbc-to-excel.exe` peut être copié sur une clé USB.
+- La commande `--check-updates` vérifie la dernière release GitHub.
+- La commande `--update` télécharge `cbc-to-excel.new.exe` et génère `update.bat`.
 
 ## Développement
 

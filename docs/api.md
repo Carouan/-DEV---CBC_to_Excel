@@ -4,6 +4,10 @@
 
 ::: core.main
 
+## core.updater
+
+::: core.updater
+
 ## core.naming
 
 ::: core.naming

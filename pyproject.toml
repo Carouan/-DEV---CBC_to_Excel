@@ -22,6 +22,7 @@ dev = [
     "ruff",
     "mypy",
     "pre-commit",
+    "pyinstaller",
 ]
 docs = [
     "mkdocs",
@@ -37,6 +38,9 @@ cbc-to-excel = "core.main:main"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["core*"]
+
+[tool.setuptools.package-data]
+core = ["resources/*.csv"]
 
 [tool.ruff]
 line-length = 88
