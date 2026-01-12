@@ -14,7 +14,7 @@ avec enrichissement automatique (type d’opération, contrepartie, catégorie, 
 - Python 3.12+ recommandé.
 - Les dépendances sont gérées via le fichier `pyproject.toml`.
 
-## Installation
+## Quickstart
 
 ```bash
 python -m venv .venv
@@ -30,6 +30,12 @@ Depuis la racine du dépôt :
 python -m core.main --input data/in_csv/export_BE50732047041718_20250118_1200.csv
 ```
 
+Avec le script console :
+
+```bash
+cbc-to-excel --input data/in_csv/export_BE50732047041718_20250118_1200.csv
+```
+
 Options disponibles :
 
 ```bash
@@ -37,7 +43,8 @@ python -m core.main \
   --input data/in_csv/export_BE50732047041718_20250118_1200.csv \
   --encoding latin-1 \
   --delimiter ";" \
-  --categories data/categories.csv
+  --categories data/categories.csv \
+  --output data/out_xlsx/rapport.xlsx
 ```
 
 Pour désactiver l’association des catégories :
@@ -45,6 +52,8 @@ Pour désactiver l’association des catégories :
 ```bash
 python -m core.main --input data/in_csv/export_BE50732047041718_20250118_1200.csv --no-categories
 ```
+
+Les CSV d'entrée locaux sont attendus sous `data/in_csv/` (ce dossier est ignoré par git).
 
 ## Développement
 
@@ -67,6 +76,11 @@ mkdocs serve
 pre-commit install
 pre-commit run --all-files
 ```
+
+## Troubleshooting
+
+- Ruff manquant : réinstallez les extras de dev avec `pip install -e ".[dev]"`.
+- Problèmes d'encodage : essayez `--encoding latin-1` ou `--encoding utf-8` selon le CSV.
 
 ## Structure du dépôt
 

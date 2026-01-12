@@ -1,4 +1,15 @@
 __pycache__/
 *.pyc
 .pytest_cache/
-*.xlsx
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+.venv/
+venv/
+.DS_Store
+
+data/in_csv/*.csv
+data/out_xlsx/*.xlsx

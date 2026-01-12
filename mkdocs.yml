@@ -1,5 +1,7 @@
 site_name: CBC to Excel
-site_url: https://example.com
+site_url: https://carouan.github.io/-DEV---CBC_to_Excel/
+repo_url: https://github.com/Carouan/-DEV---CBC_to_Excel
+edit_uri: edit/main/docs/
 
 theme:
   name: material
