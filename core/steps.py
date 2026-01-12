@@ -16,6 +16,7 @@ MINIMAL_SCHEMA = {
     "Valeur": ["Valeur", "Date"],
 }
 
+
 def _normalize_text(value: str) -> str:
     """
     Normalise le texte pour faciliter la recherche de motifs.
@@ -33,10 +34,12 @@ def _normalize_text(value: str) -> str:
     normalized = re.sub(r"\s+", " ", normalized)
     return normalized.strip()
 
+
 _OP_TYPE_PATTERNS = [
     (op_type, re.compile(re.escape(_normalize_text(op_type))))
     for op_type in operation_types
 ]
+
 
 def validate_schema(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -69,16 +72,26 @@ def validate_schema(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
+
 def step1_clean_columns(df: pd.DataFrame) -> pd.DataFrame:
     # Étape 1 : Suppression des colonnes inutiles
     columns_to_remove = [
-        "Numéro de compte", "Nom de la rubrique", "Nom", "Devise",
-        "Date", "Solde", "crédit", "débit",
-        "numéro de compte contrepartie", "BIC contrepartie",
-        "Adresse contrepartie", "communication structurée"
+        "Numéro de compte",
+        "Nom de la rubrique",
+        "Nom",
+        "Devise",
+        "Date",
+        "Solde",
+        "crédit",
+        "débit",
+        "numéro de compte contrepartie",
+        "BIC contrepartie",
+        "Adresse contrepartie",
+        "communication structurée",
     ]
-    df = df.drop(columns=columns_to_remove, errors='ignore')
+    df = df.drop(columns=columns_to_remove, errors="ignore")
     return df
+
 
 def step2_create_new_columns(df: pd.DataFrame) -> pd.DataFrame:
     # Étape 2 : Création des nouvelles colonnes
@@ -91,43 +104,59 @@ def step2_create_new_columns(df: pd.DataFrame) -> pd.DataFrame:
     df["Remarque"] = ""
     return df
 
+
 def step3_rename_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
     Étape 3 : Renommage des colonnes existantes et conversion des types.
     """
-    df = df.rename(columns={
-        "Numéro de l'extrait": "N°extrait",
-        "Valeur": "Date",
-        "Nom contrepartie": "Contrepartie",
-        "Communication libre": "Objet de l’opération"
-    })
+    df = df.rename(
+        columns={
+            "Numéro de l'extrait": "N°extrait",
+            "Valeur": "Date",
+            "Nom contrepartie": "Contrepartie",
+            "Communication libre": "Objet de l’opération",
+        }
+    )
     df["Date"] = pd.to_datetime(df["Date"], dayfirst=True, errors="coerce")
     df["Montant"] = (
-    df["Montant"]
-    .astype(str)                  # au cas où ce serait déjà un float
-    .str.replace(",", ".", regex=False)   # remplacer virgule par un point
-    .str.replace("\u00A0", "", regex=True)  # enlever espaces insécables
+        df["Montant"]
+        .astype(str)  # au cas où ce serait déjà un float
+        .str.replace(",", ".", regex=False)  # remplacer virgule par un point
+        .str.replace("\u00a0", "", regex=True)  # enlever espaces insécables
     )
     df["Montant"] = pd.to_numeric(df["Montant"], errors="coerce")
     return df
+
 
 def step4_reorder_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
     Étape 4 : Réorganisation de l'ordre des colonnes selon un ordre prédéfini.
     """
     columns_order = [
-        "N°extrait", "Date", "Type d’opération", "Contrepartie",
-        "Objet de l’opération", "Catégorie", "Projet", "Montant",
-        "Couvert par le subside", "Pièce n°", "Lien document", "Remarque", "Description"
+        "N°extrait",
+        "Date",
+        "Type d’opération",
+        "Contrepartie",
+        "Objet de l’opération",
+        "Catégorie",
+        "Projet",
+        "Montant",
+        "Couvert par le subside",
+        "Pièce n°",
+        "Lien document",
+        "Remarque",
+        "Description",
     ]
     # Éviter les KeyError si certaines colonnes n’existent pas
     columns_order = [col for col in columns_order if col in df.columns]
     df = df[columns_order]
     return df
 
+
 # --------------------------------------------------------------------------------------------------
 # --------------------------------------------------------------------------------------------------
 # --------------------------------------------------------------------------------------------------
+
 
 def step5_find_operation_type(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -140,14 +169,16 @@ def step5_find_operation_type(df: pd.DataFrame) -> pd.DataFrame:
 
     normalized_descriptions = df["Description"].apply(_normalize_text)
 
-    def match_op_type(normalized_description: str) -> str|None:
+    def match_op_type(normalized_description: str) -> str | None:
         for op_type, pattern in _OP_TYPE_PATTERNS:
             if pattern.search(normalized_description):
                 return op_type
         return None
+
     df.loc[:, "Type d’opération"] = normalized_descriptions.apply(match_op_type)
-    #df["Type d’opération"] = df["Description"].apply(match_op_type)
+    # df["Type d’opération"] = df["Description"].apply(match_op_type)
     return df
+
 
 def step6_fill_contrepartie_ET_objFact(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -187,7 +218,9 @@ def step6_fill_contrepartie_ET_objFact(df: pd.DataFrame) -> pd.DataFrame:
             # -- CAS 1 : CONSOMMATION ou FORFAIT
             #    => Contrepartie = "COMPTE D'ENTREPRISE CBC"
             #    => Objet de l’opération = "Frais bancaires"
-            if normalized_desc.startswith("CONSOMMATION") or normalized_desc.startswith("FORFAIT"):
+            if normalized_desc.startswith("CONSOMMATION") or normalized_desc.startswith(
+                "FORFAIT"
+            ):
                 current_contrepartie = "COMPTE D'ENTREPRISE CBC"
                 current_objet = "Frais bancaires"
 
@@ -220,7 +253,7 @@ def step6_fill_contrepartie_ET_objFact(df: pd.DataFrame) -> pd.DataFrame:
                 pos_comm = desc.find(marker_comm)
                 if pos_comm != -1:
                     # Tout ce qui vient après "COMMUNICATION   :"
-                    part_comm = desc[pos_comm + len(marker_comm):].strip()
+                    part_comm = desc[pos_comm + len(marker_comm) :].strip()
 
                 if part_creancier:
                     current_contrepartie = part_creancier
@@ -240,7 +273,7 @@ def step6_fill_contrepartie_ET_objFact(df: pd.DataFrame) -> pd.DataFrame:
                     end = desc.index(" AVEC", start)
                     current_contrepartie = desc[start:end].strip()
 
-                    # Exemple : on peut décider de mettre un objet par défaut 
+                    # Exemple : on peut décider de mettre un objet par défaut
                     if current_objet.strip() == "":
                         current_objet = "Achats"
 
@@ -264,12 +297,14 @@ def step6_fill_contrepartie_ET_objFact(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
+
 def step7_drop_description(df: pd.DataFrame) -> pd.DataFrame:
     """
     Étape 7 : Supprime la colonne 'Description' si elle existe encore.
     """
     df = df.drop(columns=["Description"], errors="ignore")
     return df
+
 
 def step8_fill_categorie(df, category_tree_file):
     """
@@ -309,18 +344,22 @@ def step9_export_excel(df: pd.DataFrame, input_file: str) -> pd.DataFrame:
     """
     out_file_name, period = get_output_filename_and_period(input_file, df)
 
-# Nettoyons la 'period' pour qu’elle soit valide en nom de sheet (éviter [] ou /)
+    # Nettoyons la 'period' pour qu’elle soit valide en nom de sheet (éviter [] ou /)
     sheet_name = period.replace("[", "").replace("]", "")
     sheet_name = sheet_name.replace("/", ".").replace("\\", ".")
-    sheet_name = sheet_name[:31]  # Excel limite souvent les noms de feuille à 31 caractères max
+    sheet_name = sheet_name[
+        :31
+    ]  # Excel limite souvent les noms de feuille à 31 caractères max
 
     if "Type d’opération" in df.columns:
         df["Type d’opération"] = df["Type d’opération"].fillna("Non trouvé")
 
-    df.to_excel(out_file_name, index=False, sheet_name=sheet_name, engine="xlsxwriter") #utiliser openpyxl ou xlsxwriter
+    df.to_excel(
+        out_file_name, index=False, sheet_name=sheet_name, engine="xlsxwriter"
+    )  # utiliser openpyxl ou xlsxwriter
     # Appliquer les styles Excel
     apply_styles(out_file_name, date_column=2, montant_column=8)
-    
+
     print(f"Fichier Excel généré : {out_file_name} (feuille : {sheet_name})")
 
     return df

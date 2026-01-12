@@ -1,0 +1,22 @@
+site_name: CBC to Excel
+site_url: https://example.com
+
+theme:
+  name: material
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: ["."]
+          options:
+            show_root_heading: true
+            show_source: false
+
+nav:
+  - Accueil: index.md
+  - Démarrage rapide: getting-started.md
+  - Développement: development.md
+  - API: api.md
+  - Notes de conception: design-notes.md

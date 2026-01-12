@@ -1,0 +1,5 @@
+prune data
+prune doc
+exclude *.xlsx
+recursive-exclude **/__pycache__ *
+recursive-exclude ** *.pyc

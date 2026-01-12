@@ -27,7 +27,7 @@ operation_types = [
     "RETRAIT D'ARGENT",
     "INDEMNISATION SUITE AUX OPÉRATIONS",
     "DECOMPTE",
-    "PAIEMENT CARBURANT PAR BANCONTACT"
+    "PAIEMENT CARBURANT PAR BANCONTACT",
 ]
 
 # Dictionnaire de mapping pour les différents comptes en banque CBC (perso et FDD)

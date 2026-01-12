@@ -71,8 +71,8 @@ def build_category_tree_from_csv(file_path):
     categories.csv
     """
     import csv
-    tree = CategoryTree()
 
+    tree = CategoryTree()
 
     with open(file_path, mode="r", encoding="utf-8") as file:
         reader = csv.DictReader(file, delimiter=";")
