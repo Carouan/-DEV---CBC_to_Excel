@@ -67,6 +67,13 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Désactive l'association automatique des catégories.",
     )
+    parser.add_argument(
+        "--output",
+        help=(
+            "Chemin de sortie pour le fichier Excel "
+            "(par défaut: généré depuis le nom du CSV)."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -98,7 +105,7 @@ def main():
 
     # *****     FINAL STEP     *****
     #
-    df = step9_export_excel(df, args.input)
+    df = step9_export_excel(df, args.input, args.output)
 
 
 if __name__ == "__main__":

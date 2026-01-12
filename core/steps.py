@@ -334,7 +334,11 @@ def step8_fill_categorie(df, category_tree_file):
     return df
 
 
-def step9_export_excel(df: pd.DataFrame, input_file: str) -> pd.DataFrame:
+def step9_export_excel(
+    df: pd.DataFrame,
+    input_file: str,
+    output_file: str | None = None,
+) -> pd.DataFrame:
     """
     Étape 9 :
     1) Génère le nom du fichier Excel à partir du CSV d’entrée (via naming.py)
@@ -342,7 +346,11 @@ def step9_export_excel(df: pd.DataFrame, input_file: str) -> pd.DataFrame:
     2) Détermine aussi le nom de feuille (sheet_name) en se basant sur la période.
     3) Exporte le df en Excel.
     """
-    out_file_name, period = get_output_filename_and_period(input_file, df)
+    if output_file:
+        out_file_name = output_file
+        _, period = get_output_filename_and_period(input_file, df)
+    else:
+        out_file_name, period = get_output_filename_and_period(input_file, df)
 
     # Nettoyons la 'period' pour qu’elle soit valide en nom de sheet (éviter [] ou /)
     sheet_name = period.replace("[", "").replace("]", "")
