@@ -75,5 +75,4 @@ categories: dict[str, Any] = {
         "Sport",
         "Jeux vidéo",
     ],
-    "
 }
