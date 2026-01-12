@@ -2,7 +2,10 @@ import csv
 
 from .categories import CategoryTree, build_category_tree_from_csv
 
-CATEGORY_FILE = "categories.csv"  # Le fichier principal contenant les catégories et opérations
+CATEGORY_FILE = (
+    "categories.csv"  # Le fichier principal contenant les catégories et opérations
+)
+
 
 def display_menu():
     print("\nGestion des Catégories")
@@ -17,6 +20,7 @@ def display_menu():
 
 def display_categories(tree):
     print("\nListe des catégories :")
+
     def _traverse(node):
         if node:
             _traverse(node.left)
@@ -40,13 +44,21 @@ def search_category(tree):
 
 def add_new_category():
     category_name = input("\nEntrez le nom de la nouvelle catégorie : ").strip()
-    operations = input("Entrez les types d'opérations associés, séparés par des virgules : ").strip().split(",")
+    operations = (
+        input("Entrez les types d'opérations associés, séparés par des virgules : ")
+        .strip()
+        .split(",")
+    )
     return category_name, operations
 
 
 def add_operation_to_category(tree):
     category_name = input("\nEntrez le nom de la catégorie existante : ").strip()
-    new_operations = input("Entrez les nouvelles opérations à ajouter, séparées par des virgules : ").strip().split(",")
+    new_operations = (
+        input("Entrez les nouvelles opérations à ajouter, séparées par des virgules : ")
+        .strip()
+        .split(",")
+    )
     return category_name, new_operations
 
 
@@ -57,11 +69,13 @@ def save_tree_to_csv(tree, file_path):
     with open(file_path, mode="w", encoding="utf-8", newline="") as file:
         writer = csv.writer(file, delimiter=";")
         writer.writerow(["Catégorie", "Opérations"])
+
         def _traverse_and_save(node):
             if node:
                 _traverse_and_save(node.left)
                 writer.writerow([node.name, ",".join(node.operations)])
                 _traverse_and_save(node.right)
+
         _traverse_and_save(tree.root)
 
 
@@ -91,7 +105,9 @@ def main():
             if existing_node:
                 for operation in new_operations:
                     existing_node.add_operation(operation)
-                print(f"\nOpérations ajoutées avec succès à la catégorie '{category_name}'.")
+                print(
+                    f"\nOpérations ajoutées avec succès à la catégorie '{category_name}'."
+                )
             else:
                 print(f"\nLa catégorie '{category_name}' n'existe pas.")
         elif choice == "5":
@@ -100,6 +116,7 @@ def main():
             break
         else:
             print("\nChoix invalide, veuillez réessayer.")
+
 
 if __name__ == "__main__":
     main()

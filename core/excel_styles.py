@@ -1,20 +1,23 @@
 from openpyxl import load_workbook
 from openpyxl.styles import NamedStyle
 
+
 def _has_named_style(workbook, style_name: str) -> bool:
     for named_style in workbook.named_styles:
         if getattr(named_style, "name", named_style) == style_name:
             return True
     return False
 
+
 def _ensure_named_style(workbook, style: NamedStyle) -> None:
     if not _has_named_style(workbook, style.name):
         workbook.add_named_style(style)
 
+
 def apply_styles(file_name: str, date_column: int, montant_column: int):
     """
     Applique les styles aux colonnes spécifiées dans un fichier Excel.
-    
+
     Args:
         file_name (str): Le chemin du fichier Excel à modifier.
         date_column (int): Index (1-based) de la colonne contenant les dates.

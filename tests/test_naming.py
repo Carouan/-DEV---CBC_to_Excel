@@ -2,7 +2,7 @@ import pytest
 
 pandas = pytest.importorskip("pandas")
 
-from core.naming import build_period_string
+from core.naming import build_period_string  # noqa: E402
 
 
 def test_build_period_string_same_month() -> None:

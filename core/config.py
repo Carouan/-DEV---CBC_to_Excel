@@ -25,7 +25,7 @@ operation_types = [
     "RETRAIT D'ARGENT",
     "INDEMNISATION SUITE AUX OPÉRATIONS",
     "DECOMPTE",
-    "PAIEMENT CARBURANT PAR BANCONTACT"
+    "PAIEMENT CARBURANT PAR BANCONTACT",
 ]
 
 # Dictionnaire de mapping pour les différents comptes en banque CBC (perso et FDD)
@@ -39,7 +39,7 @@ cptsCBC = {
     "BE06732062746422": "CBC_Mimi",
     "BE78742045110186": "CBC_EpargneMimi",
     "BE83734032485915": "KBC_Commun",
-    "": "KBC_Visa",    
+    "": "KBC_Visa",
 }
 
 # Liste des Catégories :
