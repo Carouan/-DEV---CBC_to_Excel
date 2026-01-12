@@ -89,8 +89,9 @@ def step1_clean_columns(df: pd.DataFrame) -> pd.DataFrame:
         "Adresse contrepartie",
         "communication structurée",
     ]
-    df = df.drop(columns=columns_to_remove, errors='ignore')
+    df = df.drop(columns=columns_to_remove, errors="ignore")
     return df
+
 
 def step2_create_new_columns(df: pd.DataFrame) -> pd.DataFrame:
     # Étape 2 : Création des nouvelles colonnes
@@ -108,12 +109,14 @@ def step3_rename_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
     Étape 3 : Renommage des colonnes existantes et conversion des types.
     """
-    df = df.rename(columns={
-        "Numéro de l'extrait": "N°extrait",
-        "Valeur": "Date",
-        "Nom contrepartie": "Contrepartie",
-        "Communication libre": "Objet de l’opération"
-    })
+    df = df.rename(
+        columns={
+            "Numéro de l'extrait": "N°extrait",
+            "Valeur": "Date",
+            "Nom contrepartie": "Contrepartie",
+            "Communication libre": "Objet de l’opération",
+        }
+    )
     df["Date"] = pd.to_datetime(df["Date"], dayfirst=True, errors="coerce")
     df["Montant"] = (
         df["Montant"]
@@ -166,7 +169,7 @@ def step5_find_operation_type(df: pd.DataFrame) -> pd.DataFrame:
 
     normalized_descriptions = df["Description"].apply(_normalize_text)
 
-    def match_op_type(normalized_description: str) -> str|None:
+    def match_op_type(normalized_description: str) -> str | None:
         for op_type, pattern in _OP_TYPE_PATTERNS:
             if pattern.search(normalized_description):
                 return op_type
